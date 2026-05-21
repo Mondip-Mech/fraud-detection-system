@@ -1,3 +1,17 @@
+---
+title: Fraud Detection API
+emoji: 🛡️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+short_description: Real-time credit card fraud detection — LightGBM, SHAP, FastAPI
+---
+
+
+
 # Real-Time Credit Card Fraud Detection System
 
 End-to-end ML system for detecting fraudulent credit card transactions in real time, built on the IEEE-CIS Fraud Detection dataset (590K transactions, 400+ features).

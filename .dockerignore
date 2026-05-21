@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Data — DO NOT bundle raw or processed data into the image
+data/raw/*
+data/processed/*
+
+# MLflow runs
+mlruns/
+mlartifacts/
+
+# Notebooks (don't need them in production image)
+notebooks/
+
+# Reports
+reports/
+
+# Tests (Docker image is for serving, not testing)
+tests/
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Secrets
+.env
+*.env

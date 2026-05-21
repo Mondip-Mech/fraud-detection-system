@@ -11,11 +11,32 @@ import pytest
 
 # Detect if the production model artifacts are available
 MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+
+
+def _is_real_artifact(path: Path) -> bool:
+    """Check if file exists AND is a real artifact (not a Git LFS pointer stub).
+
+    LFS pointer files start with 'version https://git-lfs.github.com/spec/v1'.
+    Real pickle files start with bytes like \\x80\\x04 (pickle protocol header).
+    """
+    if not path.exists():
+        return False
+    try:
+        with open(path, "rb") as f:
+            first_bytes = f.read(20)
+        # LFS pointer starts with 'version '
+        if first_bytes.startswith(b"version "):
+            return False
+        return True
+    except OSError:
+        return False
+
+
 HAS_ARTIFACTS = all([
-    (MODELS_DIR / "feature_engineer.pkl").exists(),
-    (MODELS_DIR / "fraud_model.pkl").exists(),
-    (MODELS_DIR / "shap_explainer.pkl").exists(),
-    (MODELS_DIR / "model_metadata.json").exists(),
+    _is_real_artifact(MODELS_DIR / "feature_engineer.pkl"),
+    _is_real_artifact(MODELS_DIR / "fraud_model.pkl"),
+    _is_real_artifact(MODELS_DIR / "shap_explainer.pkl"),
+    (MODELS_DIR / "model_metadata.json").exists(),  # JSON has no LFS issue
 ])
 
 # Skip all tests in this file when artifacts are missing (e.g., in CI)

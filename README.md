@@ -12,6 +12,8 @@ short_description: LightGBM fraud detection — FastAPI, SHAP, Docker
 
 # Real-Time Credit Card Fraud Detection System
 
+![CI](https://github.com/Mondip-Mech/fraud-detection-system/actions/workflows/ci.yml/badge.svg)
+
 End-to-end ML system for detecting fraudulent credit card transactions, built on the IEEE-CIS Fraud Detection dataset (590K transactions, 3.5% fraud rate).
 
 ## Live Demo

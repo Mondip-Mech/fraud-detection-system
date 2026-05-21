@@ -27,7 +27,6 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-
 # Reference start date for IEEE-CIS TransactionDT (seconds since this date)
 START_DATE = pd.Timestamp("2017-12-01")
 
@@ -71,7 +70,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
 
     # ---- Public sklearn API ----
 
-    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "FraudFeatureEngineer":
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> FraudFeatureEngineer:
         """Learn aggregations and target encodings from training data."""
         if y is None:
             raise ValueError("FraudFeatureEngineer.fit() requires y (the isFraud target).")
@@ -132,7 +131,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
     def _check_is_fitted(self) -> None:
         if not hasattr(self, "global_fraud_rate_"):
             raise RuntimeError("FraudFeatureEngineer must be fit() before transform().")
-        
+
 
         # ---- Group 1: Temporal features ----
 
@@ -173,7 +172,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             "amt_decimal": (amt - amt.astype(int)).astype(np.float32),
             "amt_is_round": (amt == amt.astype(int)).astype(np.int8),
         }
-    
+
 
     # ---- Group 3: UID-based velocity and aggregation features ----
 
@@ -185,7 +184,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             .rename(columns={"mean": "uid_amt_mean", "std": "uid_amt_std"})
         )
         return stats
-    
+
     @staticmethod
     def _fit_categorical_categories(X: pd.DataFrame) -> dict:
         """Learn the sorted category list per categorical column from training.

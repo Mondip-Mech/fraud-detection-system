@@ -121,12 +121,12 @@ class FraudDetector:
         """Convert feature value to JSON-serializable form."""
         if value is None:
             return None
-        if isinstance(value, (float, np.floating)):
+        if isinstance(value, float | np.floating):
             f = float(value)
             if np.isnan(f) or np.isinf(f):
                 return None
             return f
-        if isinstance(value, (int, np.integer)):
+        if isinstance(value, int | np.integer):
             return int(value)
         return str(value)
 

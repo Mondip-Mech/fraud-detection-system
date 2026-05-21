@@ -1,8 +1,34 @@
-"""Integration tests for the Fraud Detection API."""
+"""Integration tests for the Fraud Detection API.
 
-from fastapi.testclient import TestClient
+These tests require the trained production artifacts in models/. In CI environments
+where artifacts don't exist (they're gitignored), all tests in this file are skipped.
+To enable them locally, run notebook 03_modeling.ipynb to generate the artifacts.
+"""
 
-from src.api.main import app
+from pathlib import Path
+
+import pytest
+
+# Detect if the production model artifacts are available
+MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+HAS_ARTIFACTS = all([
+    (MODELS_DIR / "feature_engineer.pkl").exists(),
+    (MODELS_DIR / "fraud_model.pkl").exists(),
+    (MODELS_DIR / "shap_explainer.pkl").exists(),
+    (MODELS_DIR / "model_metadata.json").exists(),
+])
+
+# Skip all tests in this file when artifacts are missing (e.g., in CI)
+pytestmark = pytest.mark.skipif(
+    not HAS_ARTIFACTS,
+    reason="Production model artifacts not available (run notebook 03_modeling.ipynb to generate)",
+)
+
+# Import the app only after the skip check — avoids import errors in CI
+if HAS_ARTIFACTS:
+    from fastapi.testclient import TestClient
+
+    from src.api.main import app
 
 
 def _sample_transaction() -> dict:
@@ -57,11 +83,11 @@ class TestPredictEndpoint:
         del bad["TransactionAmt"]
         with TestClient(app) as client:
             r = client.post("/predict", json=bad)
-        assert r.status_code == 422  # Pydantic validation error
+        assert r.status_code == 422
 
     def test_predict_invalid_product_code(self):
         bad = _sample_transaction()
-        bad["ProductCD"] = "Z"  # Not in allowed set
+        bad["ProductCD"] = "Z"
         with TestClient(app) as client:
             r = client.post("/predict", json=bad)
         assert r.status_code == 422
@@ -86,7 +112,6 @@ class TestPredictEndpoint:
 class TestMetricsEndpoint:
     def test_metrics_tracks_requests(self):
         with TestClient(app) as client:
-            # Make 2 prediction requests
             client.post("/predict", json=_sample_transaction())
             client.post("/predict", json=_sample_transaction())
             r = client.get("/metrics")

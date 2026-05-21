@@ -16,7 +16,6 @@ import json
 import os
 from pathlib import Path
 
-import pandas as pd
 import streamlit as st
 
 # Optional: use requests to call the live API if URL is provided

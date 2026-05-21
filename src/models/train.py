@@ -14,8 +14,6 @@ Design:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 import lightgbm as lgb
@@ -26,7 +24,6 @@ import pandas as pd
 from sklearn.metrics import (
     average_precision_score,
     f1_score,
-    precision_recall_curve,
     precision_score,
     recall_score,
     roc_auc_score,

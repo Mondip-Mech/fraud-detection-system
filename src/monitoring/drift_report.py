@@ -16,14 +16,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-# Evidently 0.4.x API
-from evidently.report import Report
 from evidently.metric_preset import (
     DataDriftPreset,
     DataQualityPreset,
-    TargetDriftPreset,
 )
+
+# Evidently 0.4.x API
+from evidently.report import Report
 
 # Project paths
 ROOT = Path(__file__).resolve().parents[2]

@@ -7,39 +7,50 @@ sdk: docker
 app_port: 7860
 pinned: false
 license: mit
-short_description: Real-time credit card fraud detection — LightGBM, SHAP, FastAPI
+short_description: LightGBM fraud detection — FastAPI, SHAP, Docker
 ---
-
-
 
 # Real-Time Credit Card Fraud Detection System
 
-End-to-end ML system for detecting fraudulent credit card transactions in real time, built on the IEEE-CIS Fraud Detection dataset (590K transactions, 400+ features).
+End-to-end ML system for detecting fraudulent credit card transactions, built on the IEEE-CIS Fraud Detection dataset (590K transactions, 3.5% fraud rate).
 
-🚧 **Under active development.** Live demo and full documentation coming soon.
+## Live Demo
 
-## Planned Tech Stack
+- **API Docs (Swagger UI):** [/docs](docs)
+- **Health Check:** [/health](health)
+- **Metrics:** [/metrics](metrics)
 
-- **Modeling:** LightGBM, XGBoost, scikit-learn
-- **Explainability:** SHAP
+Try POST `/predict` in the Swagger UI with the pre-filled example payload.
+
+## Results
+
+| Metric | Value |
+|---|---|
+| PR-AUC | **0.473** (14× random baseline) |
+| ROC-AUC | 0.898 |
+| Recall @ 1% FPR | **41.3%** |
+| Optimal threshold | 0.376 |
+| Business savings | **$231K** on 118K validation transactions |
+
+## Tech Stack
+
+- **Modeling:** LightGBM, scikit-learn, SHAP
 - **Experiment Tracking:** MLflow
-- **Serving:** FastAPI, Docker
-- **Monitoring:** Evidently AI, Streamlit
-- **CI/CD:** GitHub Actions, pytest, ruff, mypy
+- **Serving:** FastAPI, Pydantic, Docker
+- **Testing:** pytest (17 tests)
+- **CI/CD:** GitHub Actions
 
 ## Project Structure
+
 fraud-detection-system/
 ├── src/
-│   ├── data/         # Data loading and preprocessing
+│   ├── api/          # FastAPI service + Pydantic schemas
 │   ├── features/     # Feature engineering pipeline
-│   ├── models/       # Training and evaluation
-│   ├── monitoring/   # Drift detection
-│   └── api/          # FastAPI service
-├── notebooks/        # EDA and experimentation
-├── tests/            # pytest test suite
-├── configs/          # YAML configuration files
-└── .github/workflows/ # CI/CD pipelines
-
+│   └── models/       # LightGBM training + MLflow tracking
+├── notebooks/        # EDA, modeling, evaluation
+├── tests/            # pytest suite (17 tests)
+├── models/           # Production artifacts (LFS)
+└── reports/figures/  # EDA + evaluation plots
 
 ## Author
 

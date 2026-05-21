@@ -37,6 +37,8 @@ EMAIL_SMOOTHING_M = 100
 
 # Composite entity key — our best approximation of a unique card/user
 UID_COLS = ["card1", "card2", "addr1", "P_emaildomain"]
+# Categorical columns whose category lists are learned during fit() and enforced at transform()
+CATEGORICAL_COLS = ["ProductCD", "card4", "card6", "DeviceType"]
 
 
 
@@ -84,6 +86,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
         self.email_risk_map_ = self._fit_email_risk(X)
         self.uid_amt_stats_ = self._fit_uid_amount_stats(X)
         self.uid_count_map_ = X["UID"].value_counts().to_dict()
+        self.cat_categories_ = self._fit_categorical_categories(X)
 
         return self
 
@@ -182,6 +185,22 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             .rename(columns={"mean": "uid_amt_mean", "std": "uid_amt_std"})
         )
         return stats
+    
+    @staticmethod
+    def _fit_categorical_categories(X: pd.DataFrame) -> dict:
+        """Learn the sorted category list per categorical column from training.
+
+        At transform time, these exact category lists are applied so that train,
+        validation, and production inference all share identical encodings.
+        Unseen categories at inference become NaN, which LightGBM handles natively.
+        """
+        out = {}
+        for col in CATEGORICAL_COLS:
+            if col in X.columns:
+                # Include "missing" so NaN fills always map cleanly
+                cats = sorted(set(X[col].astype("object").fillna("missing").unique()))
+                out[col] = cats
+        return out
 
     def _make_uid_features(self, X: pd.DataFrame) -> dict:
         """Per-UID transaction count and amount deviation features.
@@ -264,19 +283,22 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
 
     # ---- Group 6: Pass-through features (LightGBM handles NaN natively) ----
 
-    @staticmethod
-    def _pass_through_features(X: pd.DataFrame) -> dict:
-        """Raw numeric and categorical features that go straight to the model."""
-        # Core categorical signals from EDA
-        cat_cols = ["ProductCD", "card4", "card6", "DeviceType"]
-        # A handful of high-frequency numeric C* and D* columns
+    def _pass_through_features(self, X: pd.DataFrame) -> dict:
+        """Raw numeric and categorical features that go straight to the model.
+
+        Categoricals use the training category lists learned in fit(), so train/val/prod
+        all produce identical encodings.
+        """
         num_cols = ["C1", "C2", "C13", "D1", "D2", "D15", "addr1", "addr2"]
 
         out = {}
-        for col in cat_cols:
+        # Categoricals — enforce training-time category lists
+        for col, cats in self.cat_categories_.items():
             if col in X.columns:
-                # LightGBM accepts string categories directly; convert NaN to "missing"
-                out[col] = X[col].astype("object").fillna("missing").astype("category")
+                series = X[col].astype("object").fillna("missing")
+                # Categories not seen in training become NaN
+                out[col] = pd.Categorical(series, categories=cats)
+        # Numerics
         for col in num_cols:
             if col in X.columns:
                 out[col] = X[col].astype(np.float32)

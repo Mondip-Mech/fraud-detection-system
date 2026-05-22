@@ -143,10 +143,10 @@ class TestMetricsEndpoint:
 
 
 class TestRootEndpoint:
-    def test_root_returns_service_info(self):
+    def test_root_returns_landing_page(self):
         with TestClient(app) as client:
             r = client.get("/")
         assert r.status_code == 200
-        body = r.json()
-        assert "service" in body
-        assert body["docs"] == "/docs"
+        assert "text/html" in r.headers["content-type"]
+        assert "Fraud Detection API" in r.text
+        assert "/docs" in r.text  # Link to API docs present
